@@ -5,16 +5,18 @@ import BaseSearchBar from "general/components/Form/BaseSearchBar";
 import { useNavigate } from "react-router-dom";
 import "./style.scss";
 import { useEffect, useState } from "react";
-import { thunkGetUsersList } from "app/authSlice";
+import { thunkDeleteUser, thunkGetUsersList } from "app/authSlice";
 import UserHelper from "general/helpers/UserHelper";
 import ModalEditUser from "./ModalEditUser";
+import DialogModal from "general/components/DialogModal";
+import ToastHelper from "general/helpers/ToastHelper";
 
 UsersListScreen.propTypes = {};
 
 function UsersListScreen(props) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { usersList } = useSelector((state) => state?.auth);
+    const { usersList, isDeletingUser } = useSelector((state) => state?.auth);
     const [selectedUser, setSelectedUser] = useState({});
     const [showModalEditUser, setShowModalEditUser] = useState(false);
     const [showModalDeleteUser, setShowModalDeleteUser] = useState(false);
@@ -22,6 +24,22 @@ function UsersListScreen(props) {
     const [filters, setFilters] = useState({
         q: "",
     });
+
+    useEffect(() => {
+        document.title = "Danh sách người dùng | SHOME"
+     }, []);
+
+    const handleDeleteUser = async () => {
+        const res = await dispatch(
+            thunkDeleteUser({
+                userId: selectedUser._id,
+            })
+        );
+        if (res.payload.result === "success") {
+            ToastHelper.showSuccess(`Xóa [${selectedUser?.fullname}] thành công`);
+            await dispatch(thunkGetUsersList(filters));
+        }
+    };
 
     useEffect(() => {
         dispatch(thunkGetUsersList(filters));
@@ -174,6 +192,14 @@ function UsersListScreen(props) {
                 </div>
             </BaseLayout>
             <ModalEditUser show={showModalEditUser} onClose={() => setShowModalEditUser(false)} userItem={selectedUser}/>
+            <DialogModal
+                    title="Xóa người dùng"
+                    description={`Bạn có chắc muốn xóa [${selectedUser?.fullname}]`}
+                    show={showModalDeleteUser}
+                    close={!isDeletingUser}
+                    onClose={() => setShowModalDeleteUser(false)}
+                    onExecute={handleDeleteUser}
+                />
         </div>
     );
 }

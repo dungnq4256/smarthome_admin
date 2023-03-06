@@ -1,5 +1,6 @@
 import BaseLayout from "general/components/BaseLayout";
 import UserHelper from "general/helpers/UserHelper";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -10,6 +11,10 @@ function Account(props) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { currentAccount } = useSelector((state) => state?.auth);
+
+    useEffect(() => {
+        document.title = "Thông tin quản trị viên | SHOME"
+     }, []);
 
     return (
         <BaseLayout>

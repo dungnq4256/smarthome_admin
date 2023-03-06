@@ -1,4 +1,4 @@
-import { thunkGetHomesList } from "app/homeSlice";
+import { thunkDeleteHome, thunkGetHomesList } from "app/homeSlice";
 import BaseLayout from "general/components/BaseLayout";
 import BootstrapTable from "react-bootstrap/Table";
 import BaseSearchBar from "general/components/Form/BaseSearchBar";
@@ -6,13 +6,16 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "./style.scss";
+import ToastHelper from "general/helpers/ToastHelper";
+import DialogModal from "general/components/DialogModal";
+import ModalEditHome from "./ModalEditHome";
 
 HomesListScreen.propTypes = {};
 
 function HomesListScreen(props) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { homesList } = useSelector((state) => state?.home);
+    const { homesList, isDeletingHome } = useSelector((state) => state?.home);
     const [selectedHome, setSelectedHome] = useState({});
     const [showModalEditHome, setShowModalEditHome] = useState(false);
     const [showModalDeleteHome, setShowModalDeleteHome] = useState(false);
@@ -20,6 +23,23 @@ function HomesListScreen(props) {
     const [filters, setFilters] = useState({
         q: "",
     });
+
+    useEffect(() => {
+        document.title = "Danh sách nhà | SHOME"
+     }, []);
+
+    const handleDeleteHome = async () => {
+        const res = await dispatch(
+            thunkDeleteHome({
+                homeId: selectedHome._id,
+            })
+        );
+        console.log(res);
+        if (res.payload.result === "success") {
+            ToastHelper.showSuccess(`Xóa [${selectedHome?.name}] thành công`);
+            await dispatch(thunkGetHomesList(filters));
+        }
+    };
 
     useEffect(() => {
         dispatch(thunkGetHomesList(filters));
@@ -77,9 +97,7 @@ function HomesListScreen(props) {
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
                                                     <td>{item.name}</td>
-                                                    <td>
-                                                        {item.address}
-                                                    </td>
+                                                    <td>{item.address}</td>
                                                     <td>
                                                         {item.roomsList?.length}
                                                     </td>
@@ -128,6 +146,19 @@ function HomesListScreen(props) {
                         </div>
                     </div>
                 </div>
+                <ModalEditHome
+                    show={showModalEditHome}
+                    onClose={() => setShowModalEditHome(false)}
+                    homeItem={selectedHome}
+                />
+                <DialogModal
+                    title="Xóa nhà"
+                    description={`Bạn có chắc muốn xóa nhà [${selectedHome?.name}]`}
+                    show={showModalDeleteHome}
+                    close={!isDeletingHome}
+                    onClose={() => setShowModalDeleteHome(false)}
+                    onExecute={handleDeleteHome}
+                />
             </BaseLayout>
         </div>
     );

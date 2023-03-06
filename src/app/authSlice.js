@@ -46,6 +46,14 @@ export const thunkGetUsersList = createAsyncThunk(
     }
 );
 
+export const thunkDeleteUser = createAsyncThunk(
+    "account/delete-user",
+    async (params) => {
+        const res = await authApi.deleteUser(params);
+        return res;
+    }
+);
+
 export const thunkSignOut = createAsyncThunk(
     "auth/sign-out",
     async (params) => {
@@ -60,6 +68,7 @@ const authSlice = createSlice({
         loggedIn: false,
         isSigningIn: false,
         isGettingUsersList: false,
+        isDeletingUser: false,
         isChangingPassword: false,
         currentAccount: {},
         usersList : [],
@@ -141,6 +150,19 @@ const authSlice = createSlice({
             state.isGettingUsersList = false;
             const { result , usersList } = action.payload;
             state.usersList = usersList;
+        },
+
+         //Get delete user
+         [thunkDeleteUser.pending]: (state, action) => {
+            state.isDeletingUser = true;
+        },
+
+        [thunkDeleteUser.rejected]: (state, action) => {
+            state.isDeletingUser = false;
+        },
+
+        [thunkDeleteUser.fulfilled]: (state, action) => {
+            state.isDeletingUser = false;
         },
 
         //Change password

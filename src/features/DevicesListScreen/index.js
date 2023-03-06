@@ -4,15 +4,20 @@ import BootstrapTable from "react-bootstrap/Table";
 import { useNavigate } from "react-router-dom";
 import "./style.scss";
 import { useEffect, useState } from "react";
-import { thunkGetDevicesList } from "app/deviceSlice";
+import { thunkDeleteDevice, thunkGetDevicesList } from "app/deviceSlice";
 import BaseSearchBar from "general/components/Form/BaseSearchBar";
+import ToastHelper from "general/helpers/ToastHelper";
+import ModalEditDevice from "./ModalEditDevice";
+import DialogModal from "general/components/DialogModal";
 
 DevicesListScreen.propTypes = {};
 
 function DevicesListScreen(props) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { devicesList } = useSelector((state) => state?.device);
+    const { devicesList, isDeletingDevice } = useSelector(
+        (state) => state?.device
+    );
     const [selectedDevice, setSelectedDevice] = useState({});
     const [showModalEditDevice, setShowModalEditDevice] = useState(false);
     const [showModalDeleteDevice, setShowModalDeleteDevice] = useState(false);
@@ -20,6 +25,24 @@ function DevicesListScreen(props) {
     const [filters, setFilters] = useState({
         q: "",
     });
+    useEffect(() => {
+        document.title = "Danh sách thiết bị | SHOME"
+     }, []);
+
+    const handleDeleteDevice = async () => {
+        const res = await dispatch(
+            thunkDeleteDevice({
+                deviceId: selectedDevice._id,
+            })
+        );
+        console.log(res);
+        if (res.payload.result === "success") {
+            ToastHelper.showSuccess(
+                `Xóa [${selectedDevice?.deviceName}] thành công`
+            );
+            await dispatch(thunkGetDevicesList(filters));
+        }
+    };
 
     useEffect(() => {
         dispatch(thunkGetDevicesList(filters));
@@ -123,6 +146,19 @@ function DevicesListScreen(props) {
                         </div>
                     </div>
                 </div>
+                <ModalEditDevice
+                    show={showModalEditDevice}
+                    onClose={() => setShowModalEditDevice(false)}
+                    deviceItem={selectedDevice}
+                />
+                <DialogModal
+                    title="Xóa thiết bị"
+                    description={`Bạn có chắc muốn xóa thiết bị [${selectedDevice?.deviceName}]`}
+                    show={showModalDeleteDevice}
+                    close={!isDeletingDevice}
+                    onClose={() => setShowModalDeleteDevice(false)}
+                    onExecute={handleDeleteDevice}
+                />
             </BaseLayout>
         </div>
     );

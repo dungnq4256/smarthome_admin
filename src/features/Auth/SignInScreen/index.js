@@ -7,6 +7,7 @@ import BaseTextField from "general/components/Form/BaseTextField";
 import ToastHelper from "general/helpers/ToastHelper";
 import UserHelper from "general/helpers/UserHelper";
 import Utils from "general/utils/Utils";
+import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
@@ -32,7 +33,7 @@ function SignInScreen(props) {
                 if (res) {
                     const displayName = UserHelper.getDisplayName(res.account);
                     ToastHelper.showSuccess(`Xin chào, ${displayName}`);
-                    navigate("/dashboard");
+                    navigate("/users");
                 }
             } catch (error) {
                 console.log(`${sTag} loggin error: ${error.message}`);
@@ -44,6 +45,9 @@ function SignInScreen(props) {
             password: Yup.string().trim().required("Bạn chưa nhập mật khẩu"),
         }),
     });
+    useEffect(() => {
+        document.title = "Đăng nhập với vai trò quản trị viên | SHOME";
+    }, []);
 
     function handleNavigate(url) {
         navigate(url);
@@ -79,7 +83,10 @@ function SignInScreen(props) {
                             fieldMeta={formik.getFieldMeta("password")}
                         />
                     </div>
-                    <AppButton className="btn-blue mt-5 w-100" text="Đăng nhập" />
+                    <AppButton
+                        className="btn-blue mt-5 w-100"
+                        text="Đăng nhập"
+                    />
                 </div>
             </form>
         </div>

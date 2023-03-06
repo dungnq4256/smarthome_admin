@@ -16,7 +16,7 @@ const authApi = {
 
     // edit personal information
     updateProfile: (params) => {
-        const url = '/account/update';
+        const url = '/account/update-user';
         return axiosClient.put(url, params);
     },
 
@@ -37,6 +37,12 @@ const authApi = {
     getUsersList: (params) => {
         const url = '/account/find';
         return axiosClient.get(url, {params});
+    },
+
+    //delete user
+    deleteUser: (params) => {
+        const url = '/account/delete-user';
+        return axiosClient.delete(url, {params});
     },
 };
 
